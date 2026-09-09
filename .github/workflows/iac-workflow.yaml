@@ -1,0 +1,30 @@
+name: "Terraform"
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - "**.tf"
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - "**.tf"
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: "Run terraform apply after plan"
+        type: boolean
+        default: false
+
+jobs:
+  terraform:
+    uses: sanku560/terraform-workflows/.github/workflows/terraform-reusable.yaml@v1
+    with:
+      working-directory: "."     # or e.g. "infra/prod"
+      terraform-version: "1.9.0"
+      environment: "uat"
+      apply: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' || github.event.inputs.apply == 'true' }}
+    secrets:
+      AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+      GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+      GCP_SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT }}
